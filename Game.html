@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Typing Practice Game</title>
+    <style>
+        body { text-align: center; font-family: Arial, sans-serif; color: white; overflow: hidden; }
+        
+        /* Background animation */
+        body::before {
+            content: "";
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: url('https://lh3.googleusercontent.com/d/1c7ERyd0UZ-kvodYLr8vCu56vSgzTH2E6=w1000') no-repeat center center/cover;
+            animation: moveBackground 30s linear infinite alternate;
+            z-index: -1;
+        }
+        
+        @keyframes moveBackground {
+            0% { transform: scale(1); }
+            100% { transform: scale(1.1); }
+        }
+        
+        #word { 
+            font-size: 2.5em; 
+            margin: 20px; 
+            font-weight: bold; 
+            color: white; 
+            transition: transform 0.2s ease-in-out; 
+            border: 4px solid #FFA500; /* Light Orange Border */
+            padding: 10px;
+            display: inline-block;
+            border-radius: 8px;
+            background-color: rgba(255, 165, 0, 0.8); /* Filled Orange Background */
+        }
+        
+        #input { 
+            font-size: 1.5em; 
+            padding: 10px; 
+            border-radius: 5px; 
+            border: none; 
+            outline: none; 
+            text-align: center; 
+            transition: box-shadow 0.3s ease-in-out; 
+        }
+        
+        #input:focus { box-shadow: 0 0 10px #61dafb; }
+        #timer, #score, #high-score { font-size: 1.5em; margin: 10px; }
+        button { font-size: 1.2em; padding: 10px; margin-top: 20px; cursor: pointer; border: none; border-radius: 5px; background: #61dafb; color: #282c34; font-weight: bold; transition: transform 0.2s; }
+        button:hover { background: #21a1f1; transform: scale(1.1); }
+        .hidden { display: none; }
+        .correct { animation: bounce 0.3s ease-in-out; }
+        
+        /* Bird animation */
+        .bird {
+            position: absolute;
+            top: 10%;
+            left: -100px;
+            width: 50px;
+            height: auto;
+            animation: fly 10s linear infinite;
+        }
+        
+        @keyframes fly {
+            0% { left: -100px; transform: translateY(0); }
+            50% { transform: translateY(-20px); }
+            100% { left: 110%; transform: translateY(0); }
+        }
+        
+        @keyframes bounce {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+        }
+    </style>
+</head>
+<body>
+    <h1>Typing Practice Game</h1>
+    <p id="timer">Time: 60</p>
+    <div id="word"></div></br>
+    <input type="text" id="input" autofocus>
+    <p id="score">Score: 0</p>
+    <p id="high-score">High Score: 0</p>
+    <button id="start-btn">Restart Game</button>
+    
+    <img src="https://lh3.googleusercontent.com/d/1XPnobVK484nQAI9HkGSmwQcJSKQOUQNG=w1000" class="bird" alt="Flying bird">
+    
+    <script>
+        const letters = "abcdefghijklmnopqrstuvwxyz;.,/[]:<>?|";
+        let score = 0;
+        let highScore = 0;
+        let timeLeft = 60;
+        let interval;
+        let difficulty = 3;
+        let audioCorrect = new Audio('https://www.fesliyanstudios.com/play-mp3/4381');
+        let audioWrong = new Audio('https://www.fesliyanstudios.com/play-mp3/4382');
+
+        function getRandomWord() {
+            let length = Math.floor(Math.random() * difficulty) + 3;
+            let word = "";
+            for (let i = 0; i < length; i++) {
+                word += letters[Math.floor(Math.random() * letters.length)];
+            }
+            return word;
+        }
+
+        function newRound() {
+            currentWord = getRandomWord();
+            let wordElement = document.getElementById("word");
+            wordElement.textContent = currentWord;
+            wordElement.classList.remove("correct");
+            document.getElementById("input").value = "";
+        }
+
+        function startGame() {
+            score = 0;
+            timeLeft = 60;
+            difficulty = 3;
+            document.getElementById("score").textContent = "Score: 0";
+            document.getElementById("timer").textContent = "Time: 60";
+            document.getElementById("start-btn").classList.add("hidden");
+            newRound();
+            interval = setInterval(updateTimer, 1000);
+        }
+
+        function updateTimer() {
+            if (timeLeft > 0) {
+                timeLeft--;
+                document.getElementById("timer").textContent = "Time: " + timeLeft;
+            } else {
+                clearInterval(interval);
+                document.getElementById("start-btn").classList.remove("hidden");
+                if (score > highScore) {
+                    highScore = score;
+                    document.getElementById("high-score").textContent = "High Score: " + highScore;
+                }
+                alert("Time's up! Your score: " + score);
+            }
+        }
+
+        document.getElementById("input").addEventListener("input", function () {
+            if (this.value === currentWord) {
+                audioCorrect.play();
+                score++;
+                document.getElementById("score").textContent = "Score: " + score;
+                document.getElementById("word").classList.add("correct");
+                if (score % 5 === 0) difficulty++;
+                setTimeout(newRound, 300);
+            } else if (!currentWord.startsWith(this.value)) {
+                audioWrong.play();
+            }
+        });
+
+        document.getElementById("start-btn").addEventListener("click", startGame);
+        
+        let currentWord = "";
+        startGame();
+    </script>
+</body>
+</html>
